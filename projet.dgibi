@@ -1,0 +1,217 @@
+opti 'DIME' 2;
+opti 'ELEM' 'SEG2';
+opti 'DENS' 1;
+* hauteur >10 et largeur > 7.5
+* largeur roche
+l1 = 60;
+* Distance entre le centre et les immeubles
+d1 = 10;
+* hauteur immeuble
+h2 = 58;
+*largeur immeuble
+l2 = 15;
+po0 = 0. 50.;
+
+* Tracer Tunnel
+
+c1 = 0.2;
+c2 = 3.;
+rExt = 5.85;
+rInt = 1.;
+d2 = 2.;
+
+po0Tunnel = poin 0. 0. ;
+
+
+poArcExt1 = po0Tunnel plus (rExt 0. );
+poArcExt2 = po0Tunnel plus (0. rExt );
+poArcExt3 = po0Tunnel plus ((-1 * rExt) 0. );
+
+liArcExt1 = cerc poArcExt1 po0Tunnel poArcExt2;
+liArcExt2 = cerc poArcExt2 po0Tunnel poArcExt3;
+liArcExt3 = droi poArcExt3 poArcExt1;
+
+poArcInt1 = poArcExt1 moins (rInt (-1 * rInt) );
+poArcInt2 = poArcExt2 moins (0. (rInt) );
+poArcInt3 = poArcExt3 moins ((-1 * rInt) (-1 * rInt) );
+
+liArcInt1 = cerc poArcInt1 po0Tunnel poArcInt2;
+liArcInt2 = cerc poArcInt2 po0Tunnel poArcInt3;
+liArcInt3 = droi poArcInt3 poArcInt1;
+
+*Tracer Sol
+
+*largeur
+a1 = 60;
+* hauteur
+b1 = 100;
+
+poTer1 = po0Tunnel plus ((-0.5 * a1) (-0.5 * b1));
+poTer2 = po0Tunnel plus ((0.5 * a1) (-0.5 * b1));
+poTer3 = po0Tunnel plus ((0.5 * a1) (0.5 * b1));
+poTer4 = po0Tunnel plus ((-0.5 * a1) (0.5 * b1));
+
+liTer1 = droi poTer1 poTer2;
+liTer2 = droi poTer2 poTer3;
+liTer3 = droi poTer3 poTer4;
+liTer4 = droi poTer4 poTer1;
+
+*Tracer Immeubles
+
+*Imeuble droit
+poImmD1 = po0 plus (d1 0.);
+poImmD2 = po0 plus ((d1 + l2) 0.);
+poImmD3 = po0 plus ((d1 + l2) h2);
+poImmD4 = po0 plus ((d1 ) h2);
+
+liImmD1 = droi poImmD1 poImmD2;
+liImmD2 = droi poImmD2 poImmD3;
+liImmD3 = droi poImmD3 poImmD4;
+liImmD4 = droi poImmD4 poImmD1;
+
+
+
+*trac coImmDroit;
+
+*Immeuble gauche
+poImmG1 = po0 plus ((-1 * d1) 0.);
+poImmG2 = po0 plus ((-1 * d1 - l2) 0.);
+poImmG3 = po0 plus ((-1 * d1 - l2) h2);
+poImmG4 = po0 plus ((-1 *d1) h2);
+
+liImmG1 = droi poImmG1 poImmG2;
+liImmG2 = droi poImmG2 poImmG3;
+liImmG3 = droi poImmG3 poImmG4;
+liImmG4 = droi poImmG4 poImmG1;
+
+
+*trace coImmGauche;
+*trac coImmDroit;
+
+*trace (coImmGauche et coImmDroit);
+
+*--------------------------------------------------------*
+* CONTOURS
+
+coArcExt = liArcExt1 et liArcExt2 et liArcExt3;
+coArcInt = liArcInt1 et liArcInt2 et liArcInt3;
+
+coTer = liTer1 et liTer2 et liTer3 et liTer4;
+
+coImmDroit = liImmD1 et liImmD2 et liImmD3 et liImmD4;
+coImmGauche = liImmG1 et liImmG2 et liImmG3 et liImmG4;
+
+coImm = coImmDroit et coImmDroit;
+*--------------------------------------------------------*
+* SURFACES
+
+* TUNNEL
+suTun = surf 'PLAN' (coArcExt et (inve coArcInt))  'COUL' 'GRIS' ;
+
+* TERRE
+suTer = surf 'PLAN' (coTer  et (inve coArcExt) ) 'COUL' 'CARAMEL';
+
+* IMMEUBLEs
+*suImm = surf 'PLAN' coImm;
+suImmG = surf 'PLAN' (coImmGauche);
+suImmD = surf 'PLAN' (coImmDroit);
+
+suImm = (suImmG et suImmD);
+*trac suImm 'FACE';
+*------*
+*Surface Bas
+suTotBas = suTer et suTun ;
+
+* Toutes les surfaces
+suTot = suTer et suTun et suImm;
+trac sutot 'FACE';
+
+*-------------------------------------------------*
+*Tracer limites
+po10 = point 0. (-0.5 * b1);
+po9 = po10 plus ((-0.5 * a1)  0. ) ;
+po11 = po10 plus ((0.5 * a1) 0. ) ;
+
+li1 = droi po9 po10  ;
+li2 = droi po10 po11 ;
+li3 = li1 et li2 ;  
+
+li4 = droi po9 po11;
+* trac (li3 et suTotBas);
+
+
+pointImm = suTot poin 'PROC' (0. 50.) ;
+
+*--------------------------------------------------------*
+*Module de Young et Coef Poisson
+youTer = 7000000000;
+poTer = 0.25;
+
+youTun = 43000000000;
+poTun = 0.2;
+
+youImm = 200000000000;
+poImm = 0.27;
+
+*--------------------------------------------------------*
+*MODE et MATES*
+
+moTer = mode suTer 'MECANIQUE' 'ELASTIQUE' 'ISOTROPE';
+maTerr = mate moTer 'YOUN' youTer 'NU' poTer;
+
+moTun = mode suTun 'MECANIQUE' 'ELASTIQUE' 'ISOTROPE' ;
+maTun = mate moTun 'YOUN' youtun 'NU' poTun ;
+
+moImm = mode suImm 'MECANIQUE' 'ELASTIQUE' 'ISOTROPE';
+maImm = mate moImm 'YOUN' youImm 'NU' poImm;
+
+* Condition aux limites
+bc1 = bloq (mots 'UX' 'UY') (li3) ;
+
+
+poidsTer = manu 'CHPO' suTer 'FX' 0. 'FY' (-9.8 * 2700.);
+foter = cneq  moTer poidsTer;
+
+riTer = rigi moTer maTerr ;
+riTun = rigi moTun maTun ;
+riImm = rigi moImm maImm ;
+
+poidsTer = manu 'CHPO' suTer 'FX' 0. 'FY' (-9.8 * 2700.);
+foter = cneq  moTer poidsTer;
+
+rhsTot = foter ;
+ritot = riTer et riTun et bc1 ;
+
+trac riTot;
+
+*calcul d'élasticité de la Terre
+disp1 = reso riTer rhstot ;
+*list disp1 ;
+*trac disp1 ;
+
+
+
+*Imm en acier
+poidsImm = poin 0. (-9.8 * 30450 ) ;
+
+foImm = forc poidsImm pointImm ;
+trac foImm;
+rhsTot2  = foter ;
+
+
+riTot2 = riTer et riTun et bc1 ;
+
+
+displ = reso riTot2 rhsTot2 ;
+
+
+*list disp1;
+*trac displ  suTot ;
+
+
+
+
+*eps1 = epsi 'MCHAML' moTer 'MMODEL' disp1 ;
+*GAXY1 = exco 'GAXY' eps1 ;
+*EPXY1 = 0.5 *  GAXY1 ;
+*trac EPXY1 moTer ;
